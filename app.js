@@ -1,12 +1,40 @@
 const express = require("express"),
   app = express(),
   shajs = require("sha.js"),
-  bodyParser = require("body-parser");
+  bodyParser = require("body-parser"),
+  mongoose = require("mongoose"),
+  User = require("./models/user.js");
 
-app.use(bodyParser.urlencoded({ extended: false }))
+mongoose.connect('mongodb://localhost:27017/auth', {useNewUrlParser: true});
 
-//console.log(shajs('sha256').update('hello').digest('hex')); example of hashing the string "hello"
+app.use(bodyParser.urlencoded({ extended: true }));
 
+
+app.post("/user/register",(req,res)=>{
+  let hashedPass = shajs("sha256").update(req.body.pass).digest("hex");
+  console.log(hashedPass);
+  let user = new User({
+    username: req.body.user,
+    password: hashedPass
+  });
+  user.save();
+  res.end();
+});
+
+app.post("/user/login",(req,res)=>{
+  let hashedPass = shajs("sha256").update(req.body.pass).digest("hex");
+  let allPasses = User.findOne({password:hashedPass},(err,user)=>{
+    if(err){
+      console.log(err);
+    } else {
+      if(user != null){
+        console.log(user);
+        res.cookie("session","active",{maxAge : 	3600000});
+        console.log("cookie has been set");
+      }
+    }
+  })
+});
 
 app.listen(3000,(err,suc)=>{
   if(err){
