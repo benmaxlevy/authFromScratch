@@ -1,5 +1,5 @@
 const express = require("express"),
-  app = express(),
+t  app = express(),
   shajs = require("sha.js"),
   bodyParser = require("body-parser"),
   mongoose = require("mongoose"),
@@ -15,7 +15,7 @@ app.post("/user/register",(req,res)=>{
   console.log(hashedPass);
   let user = new User({
     username: req.body.user,
-    password: hashedPass
+    password: req.body.pass //client needs to hash it before sending to api
   });
   user.save();
   res.end();
@@ -29,7 +29,7 @@ app.post("/user/login",(req,res)=>{
     } else {
       if(user != null){
         console.log(user);
-        res.cookie("session","active",{maxAge : 	3600000});
+        res.cookie("session","active",{maxAge:3600000});
         console.log("cookie has been set");
       }
     }
